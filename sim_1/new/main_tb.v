@@ -20,8 +20,15 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module main_tb(
-
+module main_tb
+    #(
+        parameter ADDR_WIDTH = 12, 
+        parameter MAX_FEATURES = 15,
+        parameter DATA_WIDTH = 16*(MAX_FEATURES+1), //width = num_features + 1 for y values
+        parameter DEPTH = 10,      //Num_data points
+        parameter LENGTH = 16      //Num_data points
+        // parameter DEPTH = 4      //Num_data points
+        //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
     );
 
     reg CLK; // CLK
@@ -30,7 +37,7 @@ module main_tb(
     reg RST; // RST
     reg [7:0] epoch; // Number of EPOCHS
     reg [3:0] learn_rate; // Learning Rate
-    reg [11:0] data_points; // Number of Data Points
+    reg [ADDR_WIDTH-1:0] data_points; // Number of Data Points
     // reg SGD_DONE;// Flag for completion
 
     main dut(.CLK(CLK), .S(S), 
@@ -46,9 +53,13 @@ module main_tb(
 
     integer i, fd, j, rv;
 
-    reg [15:0] mem [0:3][0:11];
+
+    parameter num_feats = 11;
+    parameter num_dp = 5;
+
+    reg [LENGTH-1:0] mem [0:num_dp-1][0:num_feats];
     integer x;
-    reg [15:0]temp;
+    reg [LENGTH-1:0]temp;
 
     initial begin
         RST = 1;
@@ -56,31 +67,31 @@ module main_tb(
         // Memory Load from TB
         // fd = $fopen("D:\\Class\\Sem6\\Minor\\Minor\\Minor.srcs\\sim_1\\new\\mem1.mem", "r");
         fd = $fopen("mem2.mem", "r");
-        for(i = 0; i <= 4; i = i + 1) begin
-            for(j = 0; j <= 11; j = j+ 1) begin
+        for(i = 0; i <= num_dp-1; i = i + 1) begin
+            for(j = 0; j <= num_feats; j = j+ 1) begin
                 rv = $fscanf(fd, "%h", mem[i][j]);
             end
         end
 
         epoch = 100;
-        data_points = 4;
-        learn_rate = 15;
+        data_points = num_dp;
+        learn_rate = num_feats;
         feat = 11;
         #20;
 
         RST = 0;
         #1;
         // Serial Input
-        for (i = 0; i <= 3; i = i + 1) begin
-            for (j = 11; j >= 0; j = j - 1) begin
+        for (i = 0; i <= num_dp-1; i = i + 1) begin
+            for (j = num_feats; j >= 0; j = j - 1) begin
                 temp = mem[i][j];
-                for (x = 0;x <= 15 ;x = x+1 ) begin
+                for (x = 0;x <= LENGTH - 1 ;x = x+1 ) begin
                     S = temp[x]; #1;
                 end
             end
         end
         S = 0;
-        // #100;$finish;
+        #100;$finish;
     end
 
 endmodule

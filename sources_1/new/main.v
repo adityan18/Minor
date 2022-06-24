@@ -20,19 +20,30 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module main(
-    input CLK, // CLK
-    input S, //ser
-    input [3:0]feat, // Number of Features
-    input RST, // RST
-    input [7:0] epoch, // Number of EPOCHS
-    input [3:0] learn_rate, // Learning Rate
-    input [11:0] data_points // Number of Data Points
-    // output SGD_DONE // Flag for completion
+module main
+    #(
+        //parameter ADDR_WIDTH = 10, 
+        parameter ADDR_WIDTH = 12, 
+        parameter MAX_FEATURES = 15,
+        parameter LENGTH = 16,      //Num_data points
+        parameter DATA_WIDTH = LENGTH * (MAX_FEATURES+1), //width = num_features + 1 for y values
+        parameter DEPTH = 10      //Num_data points
+        // parameter DEPTH = 4      //Num_data points
+        //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
+    )
+    (
+        input CLK, // CLK
+        input S, //ser
+        input [3:0]feat, // Number of Features
+        input RST, // RST
+        input [7:0] epoch, // Number of EPOCHS
+        input [3:0] learn_rate, // Learning Rate
+        input [ADDR_WIDTH-1:0] data_points // Number of Data Points
+        // output SGD_DONE // Flag for completion
     );
 
-    wire [191:0] data;
-    wire [11:0] addr;
+    wire [DATA_WIDTH-1:0] data;
+    wire [ADDR_WIDTH-1:0] addr;
 
 
     parameter IDLE = 0;
@@ -53,13 +64,8 @@ module main(
     wire SGD_DONE;
     wire flag;
 
-    wire [11:0] sgd_addr;
-    wire [11:0] sgd_data;
-    wire [11:0] ser_addr;
-    wire [11:0] ser_data;
-
-    // assign ram_we = ram_we_reg;
-    // assign ram_oe = ram_oe_reg;
+    wire [ADDR_WIDTH-1:0] sgd_addr;
+    wire [ADDR_WIDTH-1:0] ser_addr;
 
     Serial_in ser (.ser(S), .done(SER_DONE),
                    .CLK(CLK), .addr(ser_addr),

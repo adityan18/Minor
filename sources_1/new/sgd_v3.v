@@ -27,7 +27,6 @@ module sgd_v3
         parameter DP = 4, // Maximum Number of Data Points
         // parameter DP = 1024, // Maximum Number of Data Points
         parameter DATA_WIDTH = (F+1) * 16 // 16 * F bit storage
-
     )
     (
         input CLK, // CLK,
