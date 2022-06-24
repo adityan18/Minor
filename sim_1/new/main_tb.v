@@ -55,7 +55,7 @@ module main_tb
 
 
     parameter num_feats = 11;
-    parameter num_dp = 5;
+    parameter num_dp = 4;
 
     reg [LENGTH-1:0] mem [0:num_dp-1][0:num_feats];
     integer x;
@@ -66,17 +66,17 @@ module main_tb
         S = 0;
         // Memory Load from TB
         // fd = $fopen("D:\\Class\\Sem6\\Minor\\Minor\\Minor.srcs\\sim_1\\new\\mem1.mem", "r");
-        fd = $fopen("mem2.mem", "r");
+        fd = $fopen("mem1.mem", "r");
         for(i = 0; i <= num_dp-1; i = i + 1) begin
             for(j = 0; j <= num_feats; j = j+ 1) begin
                 rv = $fscanf(fd, "%h", mem[i][j]);
             end
         end
 
-        epoch = 100;
+        epoch = 25;
         data_points = num_dp;
-        learn_rate = num_feats;
-        feat = 11;
+        learn_rate = 15;
+        feat = num_feats;
         #20;
 
         RST = 0;
@@ -91,7 +91,7 @@ module main_tb
             end
         end
         S = 0;
-        #100;$finish;
+        // #100;$finish;
     end
 
 endmodule
