@@ -54,7 +54,8 @@ module main_tb(
         RST = 1;
         S = 0;
         // Memory Load from TB
-        fd = $fopen("D:\\Class\\Sem6\\Minor\\Minor\\Minor.srcs\\sim_1\\new\\mem1.mem", "r");
+        // fd = $fopen("D:\\Class\\Sem6\\Minor\\Minor\\Minor.srcs\\sim_1\\new\\mem1.mem", "r");
+        fd = $fopen("mem2.mem", "r");
         for(i = 0; i <= 4; i = i + 1) begin
             for(j = 0; j <= 11; j = j+ 1) begin
                 rv = $fscanf(fd, "%h", mem[i][j]);
