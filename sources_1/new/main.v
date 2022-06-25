@@ -27,7 +27,7 @@ module main
         parameter MAX_FEATURES = 15,
         parameter LENGTH = 16,      //Num_data points
         parameter DATA_WIDTH = LENGTH * (MAX_FEATURES+1), //width = num_features + 1 for y values
-        parameter DEPTH = 10      // Num_data points
+        parameter DEPTH = 100      // Num_data points
         // parameter DEPTH = 4      // Num_data points
         //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
     )
@@ -116,20 +116,22 @@ module main
             SGD: begin
                 ser_rst <= 0;
                 ram_rst <= 0;
-                ram_we <= 0;
-                ram_oe <= 1;
+                // ram_we <= 0;
+                // ram_oe <= 1;
                 sgd_rst <= 0;
                 sgd_hold <= 0;
                 NS <= SGD_DONE ? HOLD : SGD;
+                {ram_we, ram_oe} <= SGD_DONE ? {1, 0} : {0, 1};
                 // if (SGD_DONE) begin
-                //     #500;$finish;
+                //     ram_we <= 1;
+                //     ram_oe <= 0;
                 // end
             end
             HOLD: begin
                 ser_rst <= 0;
                 ram_rst <= 0;
-                ram_we <= 0;
-                ram_oe <= 1;
+                ram_we <= 1;
+                ram_oe <= 0;
                 sgd_rst <= 0;
                 sgd_hold <= 1;
                 NS <= HOLD;

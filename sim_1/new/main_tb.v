@@ -25,7 +25,7 @@ module main_tb
         parameter ADDR_WIDTH = 12, 
         parameter MAX_FEATURES = 15,
         parameter DATA_WIDTH = 16*(MAX_FEATURES+1), //width = num_features + 1 for y values
-        parameter DEPTH = 10,      //Num_data points
+        parameter DEPTH = 100,      //Num_data points
         parameter LENGTH = 16      //Num_data points
         // parameter DEPTH = 4      //Num_data points
         //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
@@ -42,7 +42,7 @@ module main_tb
 
     main dut(.CLK(CLK), .S(S), 
              .feat(feat), .RST(RST), 
-             .epoch(epoch), .data_points(data_points), .learn_rate(learn_rate));
+             .epoch(epoch), .data_points(data_points), .learn_rate(learn));
 
     initial begin
         CLK = 0;
@@ -54,8 +54,11 @@ module main_tb
     integer i, fd, j, rv;
 
 
-    parameter num_feats = 11;
-    parameter num_dp = 6;
+    parameter num_feats = 5;
+    parameter num_dp = 5;
+    parameter epochs = 100;
+    parameter learn_rate = 10;
+
 
     reg [LENGTH-1:0] mem [0:num_dp][0:num_feats];
     integer x;
@@ -73,9 +76,9 @@ module main_tb
             end
         end
 
-        epoch = 50;
+        epoch = epochs;
         data_points = num_dp;
-        learn_rate = 5;
+        learn = learn_rate;
         feat = num_feats;
         #20;
 

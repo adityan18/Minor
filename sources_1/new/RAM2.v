@@ -108,7 +108,7 @@ module RAM2
         parameter MAX_FEATURES = 15,
         parameter LENGTH = 16,      //Num_data points
         parameter DATA_WIDTH = LENGTH * (MAX_FEATURES+1), //width = num_features + 1 for y values
-        parameter DEPTH = 10     //Num_data points
+        parameter DEPTH = 100     //Num_data points
         // parameter DEPTH = 4      //Num_data points
         //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
     )
@@ -125,13 +125,14 @@ module RAM2
     //4 bits for features, 10 bits for data points
 
     //For Writing, enable cs, we, and make sure data is available at data bus on posedge.
-    always@(addr or RST) begin
+    always@(addr or RST or posedge we) begin
         if(RST) begin
             for(i=0;i<DEPTH;i=i+1) begin
                 mem[i]<=0;
             end
         end
         else if(we) begin
+            $display("%h", data);
             mem[addr] <= data;
         end
     end

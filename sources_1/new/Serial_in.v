@@ -27,7 +27,7 @@ module Serial_in
         parameter MAX_FEATURES = 15,
         parameter LENGTH = 16,      //Num_data points
         parameter DATA_WIDTH = LENGTH * (MAX_FEATURES+1), //width = num_features + 1 for y values
-        parameter DEPTH = 10      //Num_data points
+        parameter DEPTH = 100      //Num_data points
         // parameter DEPTH = 4      //Num_data points
         //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
     )
@@ -71,7 +71,7 @@ module Serial_in
                 counter = counter + 1;
                 if (addr_reg == num_dp) begin
                     // if (counter == DATA_WIDTH / 2) begin
-                    if (counter == (init + 8 * feat) / 2) begin
+                    if (counter == (init + 8 * feat)) begin
                         $display("%d", counter, $time);
                         flag = 1;
                     end

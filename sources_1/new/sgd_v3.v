@@ -34,14 +34,14 @@ module sgd_v3
         parameter MAX_FEATURES = 15,
         parameter LENGTH = 16,      //Num_data points
         parameter DATA_WIDTH = LENGTH * (MAX_FEATURES+1), //width = num_features + 1 for y values
-        parameter DP = 10      //Num_data points
+        parameter DP = 100      //Num_data points
         // parameter DEPTH = 4      //Num_data points
         //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
     )
     (
         input CLK, // CLK,
         input RST, // RST
-        input signed [DATA_WIDTH - 1 : 0] data, // DataPoint
+        inout signed [DATA_WIDTH - 1 : 0] data, // DataPoint
         input [3:0] feat, // Number of Features,
         input [ADDR_WIDTH-1:0] data_points, // Numer of Data Points
         input [7:0] epoch, // Number of Epochs
@@ -52,7 +52,7 @@ module sgd_v3
     );
 
     parameter IDLE = 3'b110; // 6
-    parameter LOADW = 3'b100; // 6
+    parameter LOADW = 3'b100; // 4
     parameter S0 = 3'b000; // 0
     parameter S1 = 3'b001; // 1
     parameter S2 = 3'b011; // 3
@@ -81,12 +81,13 @@ module sgd_v3
     reg signed [LENGTH-1:0] error [1:DP]; // Error = Y- Y_CAP
     reg signed [LENGTH-1:0] y_cap [1:DP]; // Error = Y- Y_CAP
     reg signed [LENGTH-1:0] W [0:MAX_FEATURES]; // Weights
-    reg [11:0]dp_counter; // Data point counter
+    reg [ADDR_WIDTH-1:0]dp_counter; // Data point counter
     reg [7:0] epoch_counter; // Epoch Counter
     reg signed [LENGTH-1:0] Y [1:DP];
+    reg signed [DATA_WIDTH - 1 : 0] buffer; 
 
     integer j;
-    always @(PS) begin
+    always @(PS, epoch_counter) begin
         case (PS)
             IDLE: begin
                 NS <= S0;
@@ -140,14 +141,14 @@ module sgd_v3
                 for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
                     W[j] <= W[j] + P[j];
                 end
-                NS <= S0;
+                NS <= (epoch_counter == epoch) ? HOLD : S0;
             end
             HOLD: begin
-                for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
-                    W[j] <= W[j];
-                end
+                // for (j = 0; j <= MAX_FEATURES; j = j + 1) begin
+                //     buffer[(DATA_WIDTH - 1) - LENGTH * (j) -: 16] <= W[j];
+                // end
                 epoch_flag <= 1;
-                NS <= IDLE;
+                NS <= HOLD;
             end
             default: begin
                 NS <= IDLE;
@@ -170,6 +171,9 @@ module sgd_v3
                     dp_counter <= dp_counter + 1;
                 end
             end 
+            HOLD: begin
+                dp_counter <= 0;
+            end
             default: dp_counter <= dp_counter;
         endcase
     end
@@ -178,7 +182,7 @@ module sgd_v3
         if(RST) begin
             PS <= IDLE;
         end
-        else if (epoch_counter == epoch || hold) begin
+        else if ((epoch_counter == epoch) && hold) begin
             PS <= HOLD;
         end
         else begin
@@ -187,5 +191,9 @@ module sgd_v3
     end
 
     assign done = epoch_flag;
+    assign data = epoch_flag ? {W[0], W[1], W[2], W[3],
+                                W[4], W[5], W[6], W[7],
+                                W[8], W[9], W[10], W[11],
+                                W[12], W[13], W[14], W[15]} : 'hz;
 
 endmodule
