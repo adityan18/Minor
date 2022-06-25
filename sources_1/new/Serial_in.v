@@ -69,7 +69,7 @@ module Serial_in
             // if (counter != (feat+1) * 16 - 1) begin
             if (counter != 255) begin
                 counter = counter + 1;
-                if (addr_reg == num_dp - 1) begin
+                if (addr_reg == num_dp) begin
                     // if (counter == DATA_WIDTH / 2) begin
                     if (counter == (init + 8 * feat) / 2) begin
                         $display("%d", counter, $time);
@@ -80,7 +80,7 @@ module Serial_in
             else begin
                 counter = DATA_WIDTH - (16 * (feat+1));
                 addr_reg = addr + 1;
-                if (addr_reg == num_dp) begin
+                if (addr_reg == num_dp + 1) begin
                     reg_done = 1;
                 end
             end

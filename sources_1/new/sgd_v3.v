@@ -52,6 +52,7 @@ module sgd_v3
     );
 
     parameter IDLE = 3'b110; // 6
+    parameter LOADW = 3'b100; // 6
     parameter S0 = 3'b000; // 0
     parameter S1 = 3'b001; // 1
     parameter S2 = 3'b011; // 3
@@ -77,24 +78,32 @@ module sgd_v3
         end
     endgenerate
 
-    reg signed [LENGTH-1:0] error [0:DP-1]; // Error = Y- Y_CAP
-    reg signed [LENGTH-1:0] y_cap [0:DP-1]; // Error = Y- Y_CAP
+    reg signed [LENGTH-1:0] error [1:DP]; // Error = Y- Y_CAP
+    reg signed [LENGTH-1:0] y_cap [1:DP]; // Error = Y- Y_CAP
     reg signed [LENGTH-1:0] W [0:MAX_FEATURES]; // Weights
     reg [11:0]dp_counter; // Data point counter
     reg [7:0] epoch_counter; // Epoch Counter
-    reg [LENGTH-1:0] Y ;
+    reg signed [LENGTH-1:0] Y [1:DP];
 
     integer j;
     always @(PS) begin
         case (PS)
             IDLE: begin
-                for (j = 0; j <= MAX_FEATURES; j = j + 1) begin
-                    W[j] <= 16'h0400;
-                end
                 NS <= S0;
                 dp_counter = 12'd0;
                 epoch_counter = 8'd0;
                 epoch_flag = 0;
+                NS <= LOADW;
+                for (j = 1; j <= DP; j = j + 1) begin
+                    error[j] <= 0;
+                    y_cap[j] <= 0;
+                end
+            end
+            LOADW: begin
+                for (j = 0; j <= MAX_FEATURES; j = j + 1) begin
+                    W[j] <= data[(DATA_WIDTH - 1) - LENGTH * (j) -: 16];
+                end
+                NS <= S0;
             end
             S0: begin
                 for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
@@ -102,7 +111,7 @@ module sgd_v3
                     A[j] <= data[(DATA_WIDTH - 1) - 16 - LENGTH * (j-1) -: 16];
                     B[j] <= W[j];
                 end
-                Y <= data[DATA_WIDTH - 1 -: 16];
+                Y[dp_counter] <= data[DATA_WIDTH - 1 -: 16];
                 NS <= S1;
             end
             S1: begin
@@ -148,10 +157,13 @@ module sgd_v3
 
     always @(PS) begin
         case (PS)
+            LOADW: begin
+                dp_counter <= dp_counter + 1;
+            end
             S3: begin
                 // if (dp_counter == 3) begin
-                if (dp_counter == data_points-1) begin
-                    dp_counter <= 0;
+                if (dp_counter == data_points) begin
+                    dp_counter <= 1;
                     epoch_counter <= epoch_counter + 1;
                 end
                 else begin
