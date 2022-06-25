@@ -42,7 +42,7 @@ module main_tb
 
     main dut(.CLK(CLK), .S(S), 
              .feat(feat), .RST(RST), 
-             .epoch(epoch), .data_points(data_points), .learn_rate(learn));
+             .epoch(epoch), .data_points(data_points), .learn_rate(learn_rate));
 
     initial begin
         CLK = 0;
@@ -57,8 +57,6 @@ module main_tb
     parameter num_feats = 5;
     parameter num_dp = 5;
     parameter epochs = 100;
-    parameter learn_rate = 10;
-
 
     reg [LENGTH-1:0] mem [0:num_dp][0:num_feats];
     integer x;
@@ -78,7 +76,7 @@ module main_tb
 
         epoch = epochs;
         data_points = num_dp;
-        learn = learn_rate;
+        learn_rate = 1;
         feat = num_feats;
         #20;
 
