@@ -135,7 +135,7 @@ module main
                 sgd_rst <= 0;
                 sgd_hold <= 1;
                 NS <= HOLD;
-                #500;$finish;
+                #1000;$finish;
             end
         endcase
     end
