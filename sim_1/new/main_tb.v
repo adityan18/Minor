@@ -38,11 +38,11 @@ module main_tb
     reg [7:0] epoch; // Number of EPOCHS
     reg [3:0] learn_rate; // Learning Rate
     reg [ADDR_WIDTH-1:0] data_points; // Number of Data Points
-    // reg SGD_DONE;// Flag for completion
+    wire done_;// Flag for completion
 
     main dut(.CLK(CLK), .S(S), 
              .feat(feat), .RST(RST), 
-             .epoch(epoch), .data_points(data_points), .learn_rate(learn_rate));
+             .epoch(epoch), .data_points(data_points), .learn_rate(learn_rate), .done_(done_));
 
     initial begin
         CLK = 0;
@@ -55,7 +55,7 @@ module main_tb
 
 
     parameter num_feats = 11;
-    parameter num_dp = 6;
+    parameter num_dp = 4;
     parameter epochs = 25;
 
     reg [LENGTH-1:0] mem [0:num_dp][0:num_feats];

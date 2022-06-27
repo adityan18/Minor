@@ -125,7 +125,7 @@ module RAM2
     //4 bits for features, 10 bits for data points
 
     //For Writing, enable cs, we, and make sure data is available at data bus on posedge.
-    always@(addr or RST or we or data) begin
+    always@(addr or RST or we) begin
         if(RST) begin
             for(i=0;i<DEPTH;i=i+1) begin
                 mem[i]<=0;

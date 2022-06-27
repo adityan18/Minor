@@ -38,8 +38,8 @@ module main
         input RST, // RST
         input [7:0] epoch, // Number of EPOCHS
         input [3:0] learn_rate, // Learning Rate
-        input [ADDR_WIDTH-1:0] data_points // Number of Data Points
-        // output SGD_DONE // Flag for completion
+        input [ADDR_WIDTH-1:0] data_points, // Number of Data Points
+        output done_ // Flag for completion
     );
 
     wire [DATA_WIDTH-1:0] data;
@@ -135,7 +135,7 @@ module main
                 sgd_rst <= 0;
                 sgd_hold <= 1;
                 NS <= HOLD;
-                #1000;$finish;
+                #500;$finish;
             end
         endcase
     end
@@ -148,5 +148,7 @@ module main
             PS <= NS;
         end
     end
+
+    assign done_ = sgd_hold;
 
 endmodule
