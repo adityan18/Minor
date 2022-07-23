@@ -1,38 +1,49 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
+// Company:
+// Engineer:
+//
 // Create Date: 06/10/2022 03:25:06 PM
-// Design Name: 
+// Design Name:
 // Module Name: main
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
+// Project Name:
+// Target Devices:
+// Tool Versions:
+// Description:
+//
+// Dependencies:
+//
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+//
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module main(
-    input CLK, // CLK
-    input S, //ser
-    input [3:0]feat, // Number of Features
-    input RST, // RST
-    input [7:0] epoch, // Number of EPOCHS
-    input [3:0] learn_rate, // Learning Rate
-    input [11:0] data_points // Number of Data Points
-    // output SGD_DONE // Flag for completion
-    );
+module main
+    #(
+         //parameter ADDR_WIDTH = 10,
+         parameter ADDR_WIDTH = 12,
+         parameter MAX_FEATURES = 15,
+         parameter LENGTH = 16,      //Num_data points
+         parameter DATA_WIDTH = LENGTH * (MAX_FEATURES+1), //width = num_features + 1 for y values
+         parameter DEPTH = 100      // Num_data points
+         // parameter DEPTH = 4      // Num_data points
+         //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
+     )
+     (
+         input CLK, // CLK
+         input S, //ser
+         input [3:0]feat, // Number of Features
+         input RST, // RST
+         input [7:0] epoch, // Number of EPOCHS
+         input [3:0] learn_rate, // Learning Rate
+         input [ADDR_WIDTH-1:0] data_points, // Number of Data Points
+         output done_ // Flag for completion
+     );
 
-    wire [191:0] data;
-    wire [11:0] addr;
+    wire [DATA_WIDTH-1:0] data;
+    wire [ADDR_WIDTH-1:0] addr;
 
 
     parameter IDLE = 0;
@@ -53,13 +64,8 @@ module main(
     wire SGD_DONE;
     wire flag;
 
-    wire [11:0] sgd_addr;
-    wire [11:0] sgd_data;
-    wire [11:0] ser_addr;
-    wire [11:0] ser_data;
-
-    // assign ram_we = ram_we_reg;
-    // assign ram_oe = ram_oe_reg;
+    wire [ADDR_WIDTH-1:0] sgd_addr;
+    wire [ADDR_WIDTH-1:0] ser_addr;
 
     Serial_in ser (.ser(S), .done(SER_DONE),
                    .CLK(CLK), .addr(ser_addr),
@@ -81,9 +87,11 @@ module main(
 
     assign addr = (SER_DONE == 1) ? sgd_addr : ser_addr;
 
-    always @(PS, SGD_DONE, SER_DONE, flag) begin
+    always @(PS, SGD_DONE, SER_DONE, flag)
+    begin
         case(PS)
-            IDLE: begin
+            IDLE:
+            begin
                 ser_rst <= 1;
                 ram_rst <= 1;
                 ram_we <= 0;
@@ -92,7 +100,8 @@ module main(
                 sgd_hold <= 0;
                 NS <= SER_IN;
             end
-            SER_IN: begin
+            SER_IN:
+            begin
                 ser_rst <= 0;
                 ram_rst <= 0;
                 // ram_we <= 1;
@@ -102,43 +111,54 @@ module main(
                 NS <= SER_DONE ? SGD : SER_IN;
                 ram_we <= flag ? 0 : 1;
                 $display(flag);
-                if (SER_DONE) begin
+                if (SER_DONE)
+                begin
                     ram_we <= 0;
                     ram_oe <= 0;
                 end
             end
-            SGD: begin
+            SGD:
+            begin
                 ser_rst <= 0;
                 ram_rst <= 0;
-                ram_we <= 0;
-                ram_oe <= 1;
+                // ram_we <= 0;
+                // ram_oe <= 1;
                 sgd_rst <= 0;
                 sgd_hold <= 0;
                 NS <= SGD_DONE ? HOLD : SGD;
+                {ram_we, ram_oe} <= SGD_DONE ? {1, 0} : {0, 1};
                 // if (SGD_DONE) begin
-                //     #500;$finish;
+                //     ram_we <= 1;
+                //     ram_oe <= 0;
                 // end
             end
-            HOLD: begin
+            HOLD:
+            begin
                 ser_rst <= 0;
                 ram_rst <= 0;
-                ram_we <= 0;
-                ram_oe <= 1;
+                ram_we <= 1;
+                ram_oe <= 0;
                 sgd_rst <= 0;
                 sgd_hold <= 1;
                 NS <= HOLD;
-                #500;$finish;
+                #500;
+                $finish;
             end
         endcase
     end
 
-    always @(CLK) begin
-        if (RST) begin
+    always @(CLK)
+    begin
+        if (RST)
+        begin
             PS <= IDLE;
         end
-        else begin
+        else
+        begin
             PS <= NS;
         end
     end
+
+    assign done_ = sgd_hold;
 
 endmodule

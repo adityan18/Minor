@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module RAM2
+module RAM23
     #(
         // parameter ADDR_WIDTH = 12, 
         parameter ADDR_WIDTH = 3, 
