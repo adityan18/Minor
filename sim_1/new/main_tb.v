@@ -25,7 +25,7 @@ module main_tb
         parameter ADDR_WIDTH = 12, 
         parameter MAX_FEATURES = 15,
         parameter DATA_WIDTH = 16*(MAX_FEATURES+1), //width = num_features + 1 for y values
-        parameter DEPTH = 100,      //Num_data points
+        parameter DEPTH = 1024,      //Num_data points
         parameter LENGTH = 16      //Num_data points
         // parameter DEPTH = 4      //Num_data points
         //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
@@ -54,9 +54,9 @@ module main_tb
     integer i, fd, j, rv;
 
 
-    parameter num_feats = 11;
-    parameter num_dp = 4;
-    parameter epochs = 25;
+    parameter num_feats = 14;
+    parameter num_dp = 1000;
+    parameter epochs = 30;
 
     reg [LENGTH-1:0] mem [0:num_dp][0:num_feats];
     integer x;
@@ -66,8 +66,7 @@ module main_tb
         RST = 1;
         S = 0;
         // Memory Load from TB
-        // fd = $fopen("D:\\Class\\Sem6\\Minor\\Minor\\Minor.srcs\\sim_1\\new\\mem1.mem", "r");
-        fd = $fopen("mem2.mem", "r");
+        fd = $fopen("mem_large_14.mem", "r");
         for(i = 0; i <= num_dp; i = i + 1) begin
             for(j = 0; j <= num_feats; j = j+ 1) begin
                 rv = $fscanf(fd, "%h", mem[i][j]);

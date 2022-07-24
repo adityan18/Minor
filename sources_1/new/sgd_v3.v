@@ -34,7 +34,7 @@ module sgd_v3
         parameter MAX_FEATURES = 15,
         parameter LENGTH = 16,      //Num_data points
         parameter DATA_WIDTH = LENGTH * (MAX_FEATURES+1), //width = num_features + 1 for y values
-        parameter DP = 100      //Num_data points
+        parameter DP = 1024      //Num_data points
         // parameter DEPTH = 4      //Num_data points
         //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
     )
@@ -108,7 +108,6 @@ module sgd_v3
             end
             S0: begin
                 for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
-                    // A[j] <= RAM[dp_counter][j-1];
                     A[j] <= data[(DATA_WIDTH - 1) - 16 - LENGTH * (j-1) -: 16];
                     B[j] <= W[j];
                 end
@@ -120,8 +119,6 @@ module sgd_v3
                 for (j = 1;j <= MAX_FEATURES ; j = j + 1) begin
                     y_cap[dp_counter] = y_cap[dp_counter] + P[j];    
                 end 
-                // error[dp_counter] <= RAM[dp_counter][F] - W[0] - P[1] - P[2] - P[3] - P[4];
-                // error[dp_counter] <= data[LENGTH - 1 : 0] - W[0] - P[1] - P[2] - P[3] - P[4];
                 error[dp_counter] = data[DATA_WIDTH - 1 -: 16] - W[0];
                 for (j = 1;j <= MAX_FEATURES ; j = j + 1) begin
                     error[dp_counter] = error[dp_counter] - P[j];    
@@ -130,8 +127,6 @@ module sgd_v3
             end
             S2: begin
                 for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
-                    // A[j] <= data[(DATA_WIDTH - 1) - LENGTH * (j-1) -: 16];
-                    // A[j] <= RAM[dp_counter][j-1];
                     B[j] <= error[dp_counter] >>> learn_rate;
                 end
                 NS <= S3;
@@ -144,9 +139,6 @@ module sgd_v3
                 NS <= (epoch_counter == epoch) ? HOLD : S0;
             end
             HOLD: begin
-                // for (j = 0; j <= MAX_FEATURES; j = j + 1) begin
-                //     buffer[(DATA_WIDTH - 1) - LENGTH * (j) -: 16] <= W[j];
-                // end
                 epoch_flag <= 1;
                 NS <= HOLD;
             end
