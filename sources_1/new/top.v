@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module main
+module top
     #(
          //parameter ADDR_WIDTH = 10,
          parameter ADDR_WIDTH = 12,
@@ -55,14 +55,12 @@ module main
     reg ser_rst;
     reg ram_rst;
     reg ram_we;
-    reg ram_we_reg;
     reg ram_oe;
-    reg ram_oe_reg;
     reg sgd_rst;
     reg sgd_hold;
     wire SER_DONE;
     wire SGD_DONE;
-    wire flag;
+    wire we_stop;
 
     wire [ADDR_WIDTH-1:0] sgd_addr;
     wire [ADDR_WIDTH-1:0] ser_addr;
@@ -70,7 +68,7 @@ module main
     Serial_in ser (.ser(S), .done(SER_DONE),
                    .CLK(CLK), .addr(ser_addr),
                    .RST(ser_rst), .num_dp(data_points),
-                   .feat(feat), .data(data), .flag(flag));
+                   .feat(feat), .data(data), .we_stop(we_stop));
 
     RAM2 ram (.oe(ram_oe), .we(ram_we),
               .addr(addr), .data(data),
@@ -87,7 +85,7 @@ module main
 
     assign addr = (SER_DONE == 1) ? sgd_addr : ser_addr;
 
-    always @(PS, SGD_DONE, SER_DONE, flag)
+    always @(PS, SGD_DONE, SER_DONE, we_stop)
     begin
         case(PS)
             IDLE:
@@ -104,13 +102,12 @@ module main
             begin
                 ser_rst <= 0;
                 ram_rst <= 0;
-                // ram_we <= 1;
                 ram_oe <= 0;
                 sgd_rst <= 1;
                 sgd_hold <= 0;
                 NS <= SER_DONE ? SGD : SER_IN;
-                ram_we <= flag ? 0 : 1;
-                $display(flag);
+                ram_we <= we_stop ? 0 : 1;
+                $display(we_stop);
                 if (SER_DONE)
                 begin
                     ram_we <= 0;
@@ -121,16 +118,10 @@ module main
             begin
                 ser_rst <= 0;
                 ram_rst <= 0;
-                // ram_we <= 0;
-                // ram_oe <= 1;
                 sgd_rst <= 0;
                 sgd_hold <= 0;
                 NS <= SGD_DONE ? HOLD : SGD;
                 {ram_we, ram_oe} <= SGD_DONE ? {1, 0} : {0, 1};
-                // if (SGD_DONE) begin
-                //     ram_we <= 1;
-                //     ram_oe <= 0;
-                // end
             end
             HOLD:
             begin

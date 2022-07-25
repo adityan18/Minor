@@ -20,15 +20,13 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module main_tb
+module top_tb
     #(
         parameter ADDR_WIDTH = 12, 
         parameter MAX_FEATURES = 15,
         parameter DATA_WIDTH = 16*(MAX_FEATURES+1), //width = num_features + 1 for y values
         parameter DEPTH = 1024,      //Num_data points
         parameter LENGTH = 16      //Num_data points
-        // parameter DEPTH = 4      //Num_data points
-        //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
     );
 
     reg CLK; // CLK
@@ -40,7 +38,7 @@ module main_tb
     reg [ADDR_WIDTH-1:0] data_points; // Number of Data Points
     wire done_;// Flag for completion
 
-    main dut(.CLK(CLK), .S(S), 
+    top dut(.CLK(CLK), .S(S), 
              .feat(feat), .RST(RST), 
              .epoch(epoch), .data_points(data_points), .learn_rate(learn_rate), .done_(done_));
 

@@ -29,14 +29,11 @@ module sgd_v3
     //     parameter DATA_WIDTH = (F+1) * 16 // 16 * F bit storage
     // )
     #(
-        //parameter ADDR_WIDTH = 10, 
         parameter ADDR_WIDTH = 12, 
         parameter MAX_FEATURES = 15,
         parameter LENGTH = 16,      //Num_data points
         parameter DATA_WIDTH = LENGTH * (MAX_FEATURES+1), //width = num_features + 1 for y values
         parameter DP = 1024      //Num_data points
-        // parameter DEPTH = 4      //Num_data points
-        //parameter LEN_BITS = 4     // Num_bits required to get 'LENGTH' features
     )
     (
         input CLK, // CLK,
@@ -53,10 +50,10 @@ module sgd_v3
 
     parameter IDLE = 3'b110; // 6
     parameter LOADW = 3'b100; // 4
-    parameter S0 = 3'b000; // 0
-    parameter S1 = 3'b001; // 1
-    parameter S2 = 3'b011; // 3
-    parameter S3 = 3'b010; // 2
+    parameter MUL_YCAP = 3'b000; // 0
+    parameter ER_CALC = 3'b001; // 1
+    parameter MUL_WT = 3'b011; // 3
+    parameter WT_UP = 3'b010; // 2
     parameter HOLD = 3'b111; // 7
 
     reg [2:0] PS, NS; // Present State, Next State
@@ -90,7 +87,7 @@ module sgd_v3
     always @(PS, epoch_counter) begin
         case (PS)
             IDLE: begin
-                NS <= S0;
+                NS <= MUL_YCAP;
                 dp_counter = 12'd0;
                 epoch_counter = 8'd0;
                 epoch_flag = 0;
@@ -104,17 +101,17 @@ module sgd_v3
                 for (j = 0; j <= MAX_FEATURES; j = j + 1) begin
                     W[j] <= data[(DATA_WIDTH - 1) - LENGTH * (j) -: 16];
                 end
-                NS <= S0;
+                NS <= MUL_YCAP;
             end
-            S0: begin
+            MUL_YCAP: begin
                 for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
                     A[j] <= data[(DATA_WIDTH - 1) - 16 - LENGTH * (j-1) -: 16];
                     B[j] <= W[j];
                 end
                 Y[dp_counter] <= data[DATA_WIDTH - 1 -: 16];
-                NS <= S1;
+                NS <= ER_CALC;
             end
-            S1: begin
+            ER_CALC: begin
                 y_cap[dp_counter] = W[0];
                 for (j = 1;j <= MAX_FEATURES ; j = j + 1) begin
                     y_cap[dp_counter] = y_cap[dp_counter] + P[j];    
@@ -123,20 +120,20 @@ module sgd_v3
                 for (j = 1;j <= MAX_FEATURES ; j = j + 1) begin
                     error[dp_counter] = error[dp_counter] - P[j];    
                 end                
-                NS <= S2;
+                NS <= MUL_WT;
             end
-            S2: begin
+            MUL_WT: begin
                 for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
                     B[j] <= error[dp_counter] >>> learn_rate;
                 end
-                NS <= S3;
+                NS <= WT_UP;
             end
-            S3: begin
+            WT_UP: begin
                 W[0] <= W[0] + error[dp_counter] >>> learn_rate; 
                 for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
                     W[j] <= W[j] + P[j];
                 end
-                NS <= (epoch_counter == epoch) ? HOLD : S0;
+                NS <= (epoch_counter == epoch) ? HOLD : MUL_YCAP;
             end
             HOLD: begin
                 epoch_flag <= 1;
@@ -153,7 +150,7 @@ module sgd_v3
             LOADW: begin
                 dp_counter <= dp_counter + 1;
             end
-            S3: begin
+            WT_UP: begin
                 // if (dp_counter == 3) begin
                 if (dp_counter == data_points) begin
                     dp_counter <= 1;

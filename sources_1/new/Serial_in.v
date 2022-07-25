@@ -39,7 +39,7 @@ module Serial_in
          input RST,
          output [ADDR_WIDTH-1:0] addr,
          output [DATA_WIDTH-1:0] data,
-         output reg flag,
+         output reg we_stop,
          output done
      );
 
@@ -50,36 +50,29 @@ module Serial_in
 
     reg [8:0] init;
 
-    // RAM2 r(0, 1, RST, addr, data);
-
     always@(CLK)
     begin
-        // if(done==0) begin
         if(RST)
         begin
             addr_reg <= -1;
             shift_reg <= 0;
-            // reg_we <= 0;
-            // reg_oe <= 0;
             reg_done <= 0;
             counter <= DATA_WIDTH - (16 * (feat+1));
             init <= DATA_WIDTH - (16 * (feat+1));
-            flag <= 0;
+            we_stop <= 0;
         end
         else if (done != 1)
         begin
             shift_reg[counter] <= ser;
-            // if (counter != (feat+1) * 16 - 1) begin
             if (counter != 255)
             begin
                 counter <= counter + 1;
                 if (addr_reg == num_dp)
                 begin
-                    // if (counter == DATA_WIDTH / 2) begin
                     if (counter == (init + 8 * feat))
                     begin
                         $display("%d", counter, $time);
-                        flag <= 1;
+                        we_stop <= 1;
                     end
                 end
             end
