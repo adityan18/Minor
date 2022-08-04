@@ -116,6 +116,8 @@ module top
             end
             SGD:
             begin
+                // #200;
+                // $finish;
                 ser_rst <= 0;
                 ram_rst <= 0;
                 sgd_rst <= 0;
@@ -132,7 +134,7 @@ module top
                 sgd_rst <= 0;
                 sgd_hold <= 1;
                 NS <= HOLD;
-                #500;
+                #5000;
                 $finish;
             end
         endcase
