@@ -52,9 +52,9 @@ module top_tb
     integer i, fd, j, rv;
 
 
-    parameter num_feats = 5;
-    parameter num_dp = 901;
-    parameter epochs = 50;
+    parameter num_feats = 14;
+    parameter num_dp = 1000;
+    parameter epochs = 30;
 
     reg [LENGTH-1:0] mem [0:num_dp][0:num_feats];
     integer x;
@@ -64,7 +64,7 @@ module top_tb
         RST = 1;
         S = 0;
         // Memory Load from TB
-        fd = $fopen("mem_large_5.mem", "r");
+        fd = $fopen("mem_large_14.mem", "r");
         for(i = 0; i <= num_dp; i = i + 1) begin
             for(j = 0; j <= num_feats; j = j+ 1) begin
                 rv = $fscanf(fd, "%h", mem[i][j]);
