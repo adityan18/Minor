@@ -14,6 +14,7 @@ read_sdc /home/Chinmaye/counter_design_database_45nm/constraints/constraints_Alg
 set_attribute syn_generic_effort medium
 set_attribute syn_map_effort medium
 set_attribute syn_opt_effort medium
+
 syn_generic
 syn_map
 

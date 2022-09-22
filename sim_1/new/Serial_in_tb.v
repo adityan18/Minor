@@ -45,12 +45,12 @@ module Serial_in_tb();
     reg [15:0]temp, temp1;
     initial begin
         rst = 1;
-        fd = $fopen("D:\\Class\\Sem6\\Minor\\Minor\\Minor.srcs\\sim_1\\new\\mem1.mem", "r");
-        for(i = 0; i <= 4; i = i + 1) begin
-            for(j = 0; j <= 11; j = j+ 1) begin
-                rv = $fscanf(fd, "%h", mem[i][j]);
-            end
-        end
+        // fd = $fopen("D:\\Class\\Sem6\\Minor\\Minor\\Minor.srcs\\sim_1\\new\\mem1.mem", "r");
+        // for(i = 0; i <= 4; i = i + 1) begin
+        //     for(j = 0; j <= 11; j = j+ 1) begin
+        //         rv = $fscanf(fd, "%h", mem[i][j]);
+        //     end
+        // end
         #5;
         rst = 0;
         for (i = 0; i <= 4; i = i + 1) begin
