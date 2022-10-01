@@ -46,7 +46,7 @@ module sgd_v3
         input [3:0] learn_rate, // Learning Rate
         output [ADDR_WIDTH-1:0] addr, // Address of DataPoint in RAM
         output done // Flag for completion of Epochs
-    
+    );
 
 	parameter IDLE     = 3'b110; // 6
 	parameter LOADW    = 3'b100; // 4
