@@ -54,7 +54,7 @@ module top_tb
 
     parameter num_feats = 14;
     parameter num_dp = 1000;
-    parameter epochs = 30;
+    parameter epochs = 1;
 
     reg [LENGTH-1:0] mem [0:num_dp][0:num_feats];
     integer x;
