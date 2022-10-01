@@ -140,7 +140,10 @@ module sgd_v3
 				// $finish;
 			end
 			WT_UP : begin
-				W[(DATA_WIDTH-1)-:16] <= W[(DATA_WIDTH - 1) -: 16] + (Y[dp_counter] - y_cap[dp_counter]) >>> learn_rate; // W[0]
+                error[dp_counter] = (Y[dp_counter] - y_cap[dp_counter]) >>> learn_rate;
+                if (mul_size_const_w == 0) begin
+                    W[(DATA_WIDTH - 1) -: 16] <= W[(DATA_WIDTH - 1) -: 16] + ((Y[dp_counter] - y_cap[dp_counter]) >>> learn_rate); // W[0]
+                end
 				for (j = 1; j <= MAX_MUL; j = j + 1) begin
 					W[(DATA_WIDTH-1)-16-LENGTH*(mul_size_const_w+j-1)-:16] <= W[(DATA_WIDTH - 1) - 16 - LENGTH * (mul_size_const_w + j - 1) -: 16] + P[j];
 				end
