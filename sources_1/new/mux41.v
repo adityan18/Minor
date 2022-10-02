@@ -30,7 +30,7 @@ module mux41(
     );
 
     // reg [15:0] A_reg, B_reg, C_reg, D_reg;
-    always @(S) begin
+    always @(S, A, B) begin
         case (S)
             2'd0: begin
                 Y = A;

@@ -27,16 +27,16 @@ module mux21(
     output reg [15:0] Y // Mux Output
     );
 
-    always @(S) begin
+    always @(S, A, B) begin
         case (S)
             1'b0: begin
-                Y <= A;
+                Y = A;
             end 
             1'b1: begin
-                Y <= B;
+                Y = B;
             end
             default: begin
-                Y <= 16'bz;
+                Y = 16'bz;
             end
         endcase
     end

@@ -76,24 +76,24 @@ module sgd_v3
 
 	// X MUX
 	wire [15:0] Yx [1:4];
-	mux41 muxx1 (.A(data[(ADDR_WIDTH-1-16*1) -: 16]), .B(data[(ADDR_WIDTH-1-16*2) -: 16]), .C(data[(ADDR_WIDTH-1-16*2) -: 16]), .D(data[(ADDR_WIDTH-1-16*4) -: 16]), .S(cycle_count), .Y(Yx[1]));
-	mux41 muxx2 (.A(data[(ADDR_WIDTH-1-16*5) -: 16]), .B(data[(ADDR_WIDTH-1-16*6) -: 16]), .C(data[(ADDR_WIDTH-1-16*7 -: 16]), .D(data[(ADDR_WIDTH-1-16*8) -: 16]), .S(cycle_count), .Y(Yx[2]));
-	mux41 muxx3 (.A(data[(ADDR_WIDTH-1-16*9) -: 16]), .B(data[(ADDR_WIDTH-1-16*10) -: 16]), .C(data[(ADDR_WIDTH-1-16*11) -: 16]), .D(data[(ADDR_WIDTH-1-16*12) -: 16]), .S(cycle_count), .Y(Yx[3]));
-	mux41 muxx4 (.A(data[(ADDR_WIDTH-1-16*13) -: 16]), .B(data[(ADDR_WIDTH-1-16*14) -: 16]), .C(data[(ADDR_WIDTH-1-16*15) -: 16]), .D(0), .S(cycle_count), .Y(Yx[4]));
+	mux41 muxX1 (.A(data[(DATA_WIDTH-1-16*1) -: 16]), .B(data[(DATA_WIDTH-1-16*2) -: 16]), .C(data[(DATA_WIDTH-1-16*3) -: 16]), .D(data[(DATA_WIDTH-1-16*4) -: 16]), .S(cycle_count), .Y(Yx[1]));
+	mux41 muxX2 (.A(data[(DATA_WIDTH-1-16*5) -: 16]), .B(data[(DATA_WIDTH-1-16*6) -: 16]), .C(data[(DATA_WIDTH-1-16*7) -: 16]), .D(data[(DATA_WIDTH-1-16*8) -: 16]), .S(cycle_count), .Y(Yx[2]));
+	mux41 muxX3 (.A(data[(DATA_WIDTH-1-16*9) -: 16]), .B(data[(DATA_WIDTH-1-16*10) -: 16]), .C(data[(DATA_WIDTH-1-16*11) -: 16]), .D(data[(DATA_WIDTH-1-16*12) -: 16]), .S(cycle_count), .Y(Yx[3]));
+	mux41 muxX4 (.A(data[(DATA_WIDTH-1-16*13) -: 16]), .B(data[(DATA_WIDTH-1-16*14) -: 16]), .C(data[(DATA_WIDTH-1-16*15) -: 16]), .D(0), .S(cycle_count), .Y(Yx[4]));
 
 	// Weight MUX
 	wire [15:0] Yw [1:4];
-	mux41 muxw1 (.A(W[1]), .B(W[2]), .C(W[3]), .D(W[4]), .S(cycle_count), .Y(Yw[1]));
-	mux41 muxw2 (.A(W[5]), .B(W[6]), .C(W[7]), .D(W[8]), .S(cycle_count), .Y(Yw[2]));
-	mux41 muxw3 (.A(W[9]), .B(W[10]), .C(W[11]), .D(W[12]), .S(cycle_count), .Y(Yw[3]));
-	mux41 muxw4 (.A(W[13]), .B(W[14]), .C(W[15]), .D(0), .S(cycle_count), .Y(Yw[4]));
+	mux41 muxW1 (.A(W[1]), .B(W[2]), .C(W[3]), .D(W[4]), .S(cycle_count), .Y(Yw[1]));
+	mux41 muxW2 (.A(W[5]), .B(W[6]), .C(W[7]), .D(W[8]), .S(cycle_count), .Y(Yw[2]));
+	mux41 muxW3 (.A(W[9]), .B(W[10]), .C(W[11]), .D(W[12]), .S(cycle_count), .Y(Yw[3]));
+	mux41 muxW4 (.A(W[13]), .B(W[14]), .C(W[15]), .D(0), .S(cycle_count), .Y(Yw[4]));
 
 	// MUX21
 	wire [15:0] Yb [1:4];
-	mux21 muxB1 (.A(), .B(error[dp_counter]), .S(mux21_flag), .Y(Yb[1]));
-	mux21 muxB2 (.A(), .B(error[dp_counter]), .S(mux21_flag), .Y(Yb[2]));
-	mux21 muxB3 (.A(), .B(error[dp_counter]), .S(mux21_flag), .Y(Yb[3]));
-	mux21 muxB4 (.A(), .B(error[dp_counter]), .S(mux21_flag), .Y(Yb[4]));
+	mux21 muxB1 (.A(Yw[1]), .B(error[dp_counter] >>> learn_rate), .S(mux21_flag), .Y(Yb[1]));
+	mux21 muxB2 (.A(Yw[2]), .B(error[dp_counter] >>> learn_rate), .S(mux21_flag), .Y(Yb[2]));
+	mux21 muxB3 (.A(Yw[3]), .B(error[dp_counter] >>> learn_rate), .S(mux21_flag), .Y(Yb[3]));
+	mux21 muxB4 (.A(Yw[4]), .B(error[dp_counter] >>> learn_rate), .S(mux21_flag), .Y(Yb[4]));
 
 
 
@@ -118,6 +118,7 @@ module sgd_v3
 				epoch_flag    = 0;
 				NS            <= LOADW;
 				cycle_count <= 0;
+				mux21_flag <= 0;
 				for (j = 1; j <= DP; j = j + 1) begin
 					error[j] <= 0;
 					y_cap[j] <= 0;
@@ -127,48 +128,76 @@ module sgd_v3
 				for (j = 0; j <= MAX_FEATURES; j = j + 1) begin
 					W[j] <= data[(DATA_WIDTH - 1) - LENGTH * (j) -: 16];
 				end
-				NS <= MUL_YCAP;
+				NS <= ER_CALC;
 			end
 			MUL_YCAP : begin
-				// for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
-				// 	A[j] <= data[(DATA_WIDTH - 1) - 16 - LENGTH * (j-1) -: 16];
-				// 	B[j] <= W[j];
-				// end
-				// Y[dp_counter] <= data[DATA_WIDTH - 1 -: 16];
 				NS            <= ER_CALC;
 			end
 			ER_CALC : begin
 				Y[dp_counter] <= data[DATA_WIDTH - 1 -: 16];
 				if (cycle_count == 0) begin
-					error[dp_counter] <= error[dp_counter] - W[0] - P[1] - P[2] - P[3] - P[4];
+					error[dp_counter] <= data[DATA_WIDTH - 1 -: 16] - W[0] - P[1] - P[2] - P[3] - P[4];
 				end
 				else begin
 					error[dp_counter] <= error[dp_counter] - P[1] - P[2] - P[3] - P[4];
 				end
-				// y_cap[dp_counter] = W[0];
-				// for (j = 1;j <= MAX_FEATURES ; j = j + 1) begin
-				// 	y_cap[dp_counter] = y_cap[dp_counter] + P[j];
-				// end
-				// error[dp_counter] = data[DATA_WIDTH - 1 -: 16] - W[0];
-				// for (j = 1;j <= MAX_FEATURES ; j = j + 1) begin
-				// 	error[dp_counter] = error[dp_counter] - P[j];
-				// end
 				cycle_count <= cycle_count + 1;
-				NS <= (cycle_count == 2) ? MUL_WT : MUL_YCAP;
+				if (cycle_count == 3) begin
+					cycle_count <= 0;
+					mux21_flag <= 1;
+					NS <= WT_UP;
+				end
+				else begin
+					NS <= MUL_YCAP;
+				end
 			end
 			MUL_WT : begin
-				$finish;
-				for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
-					B[j] <= error[dp_counter] >>> learn_rate;
-				end
+				// $finish;
+				// for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
+				// 	B[j] <= error[dp_counter] >>> learn_rate;
+				// end
 				NS <= WT_UP;
 			end
 			WT_UP : begin
-				W[0] <= W[0] + error[dp_counter] >>> learn_rate;
-				for (j = 1; j <= MAX_FEATURES; j = j + 1) begin
-					W[j] <= W[j] + P[j];
+				case (cycle_count)
+					2'd0: begin
+						W[0] <= W[0] + (error[dp_counter] >>> learn_rate);
+						W[1] <= P[1];
+						W[5] <= P[2];
+						W[9] <= P[3];
+						W[13] <= P[4];
+					end 
+					2'd1: begin
+						W[2] <= P[1];
+						W[6] <= P[2];
+						W[10] <= P[3];
+						W[14] <= P[4];
+					end
+					2'd2: begin
+						W[3] <= P[1];
+						W[7] <= P[2];
+						W[11] <= P[3];
+						W[15] <= P[4];
+					end
+					2'd3: begin
+						W[4] <= P[1];
+						W[8] <= P[2];
+						W[12] <= P[3];
+					end
+				endcase
+				cycle_count <= cycle_count + 1;
+				if (epoch_counter == epoch) begin
+					NS <= HOLD;
 				end
-				NS <= (epoch_counter == epoch) ? HOLD : MUL_YCAP;
+				else if (cycle_count == 3) begin
+					mux21_flag <= 0;
+					NS <= ER_CALC;
+					// $finish;
+				end
+				else begin
+					NS <= MUL_WT;
+				end
+				// NS <= (epoch_counter == epoch) ? HOLD : (cycle_count == 3 ? ER_CALC : WT_UP) ;
 			end
 			HOLD : begin
 				epoch_flag <= 1;
@@ -186,14 +215,15 @@ module sgd_v3
 				dp_counter <= dp_counter + 1;
 			end
 			WT_UP : begin
-				// if (dp_counter == 3) begin
-				if (dp_counter == data_points) begin
-					dp_counter    <= 1;
-					epoch_counter <= epoch_counter + 1;
-				end
-				else begin
-					dp_counter <= dp_counter + 1;
-				end
+					if (dp_counter == data_points) begin
+						dp_counter    <= 1;
+						epoch_counter <= epoch_counter + 1;
+					end
+					else begin
+						if (cycle_count == 3) begin
+							dp_counter <= dp_counter + 1;
+						end
+					end
 			end
 			HOLD : begin
 				dp_counter <= 0;
