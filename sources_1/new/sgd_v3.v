@@ -134,13 +134,13 @@ module sgd_v3
 				NS            <= ER_CALC;
 			end
 			ER_CALC : begin
-				Y[dp_counter] <= data[DATA_WIDTH - 1 -: 16];
-				if (cycle_count == 0) begin
-					error[dp_counter] <= data[DATA_WIDTH - 1 -: 16] - W[0] - P[1] - P[2] - P[3] - P[4];
-				end
-				else begin
-					error[dp_counter] <= error[dp_counter] - P[1] - P[2] - P[3] - P[4];
-				end
+				// Y[dp_counter] <= data[DATA_WIDTH - 1 -: 16];
+				// if (cycle_count == 0) begin
+				// 	error[dp_counter] <= data[DATA_WIDTH - 1 -: 16] - W[0] - P[1] - P[2] - P[3] - P[4];
+				// end
+				// else begin
+				// 	error[dp_counter] <= error[dp_counter] - P[1] - P[2] - P[3] - P[4];
+				// end
 				cycle_count <= cycle_count + 1;
 				if (cycle_count == 3) begin
 					cycle_count <= 0;
@@ -148,7 +148,7 @@ module sgd_v3
 					NS <= WT_UP;
 				end
 				else begin
-					NS <= MUL_YCAP;
+					NS <= ER_CALC;
 				end
 			end
 			MUL_WT : begin
@@ -159,32 +159,32 @@ module sgd_v3
 				NS <= WT_UP;
 			end
 			WT_UP : begin
-				case (cycle_count)
-					2'd0: begin
-						W[0] <= W[0] + (error[dp_counter] >>> learn_rate);
-						W[1] <= P[1];
-						W[5] <= P[2];
-						W[9] <= P[3];
-						W[13] <= P[4];
-					end 
-					2'd1: begin
-						W[2] <= P[1];
-						W[6] <= P[2];
-						W[10] <= P[3];
-						W[14] <= P[4];
-					end
-					2'd2: begin
-						W[3] <= P[1];
-						W[7] <= P[2];
-						W[11] <= P[3];
-						W[15] <= P[4];
-					end
-					2'd3: begin
-						W[4] <= P[1];
-						W[8] <= P[2];
-						W[12] <= P[3];
-					end
-				endcase
+				// case (cycle_count)
+				// 	2'd0: begin
+				// 		W[0] <= W[0] + (error[dp_counter] >>> learn_rate);
+				// 		W[1] <= P[1];
+				// 		W[5] <= P[2];
+				// 		W[9] <= P[3];
+				// 		W[13] <= P[4];
+				// 	end 
+				// 	2'd1: begin
+				// 		W[2] <= P[1];
+				// 		W[6] <= P[2];
+				// 		W[10] <= P[3];
+				// 		W[14] <= P[4];
+				// 	end
+				// 	2'd2: begin
+				// 		W[3] <= P[1];
+				// 		W[7] <= P[2];
+				// 		W[11] <= P[3];
+				// 		W[15] <= P[4];
+				// 	end
+				// 	2'd3: begin
+				// 		W[4] <= P[1];
+				// 		W[8] <= P[2];
+				// 		W[12] <= P[3];
+				// 	end
+				// endcase
 				cycle_count <= cycle_count + 1;
 				if (epoch_counter == epoch) begin
 					NS <= HOLD;
@@ -192,10 +192,10 @@ module sgd_v3
 				else if (cycle_count == 3) begin
 					mux21_flag <= 0;
 					NS <= ER_CALC;
-					// $finish;
+					$finish;
 				end
 				else begin
-					NS <= MUL_WT;
+					NS <= WT_UP;
 				end
 				// NS <= (epoch_counter == epoch) ? HOLD : (cycle_count == 3 ? ER_CALC : WT_UP) ;
 			end
@@ -209,7 +209,7 @@ module sgd_v3
 		endcase
 	end
 
-	always @(PS) begin
+	always @(PS, NS) begin
 		case (PS)
 			LOADW : begin
 				dp_counter <= dp_counter + 1;
